@@ -176,7 +176,7 @@ def extract_student_info(filepath):
     branch_match = re.search(
     r"Degree\s*[-–]?\s*Branch\s*[:\-]?\s*(?:B\.?Tech\.?|B\.?E\.?)?\s*[-–]?\s*([A-Za-z\s&\.\-]+?)(?=\s{2,}|\sSEMESTER|\sSUB-CODE)",
     text, re.IGNORECASE
-    )
+)
 
 
     if not (name_match and reg_no_match and branch_match):
@@ -186,7 +186,7 @@ def extract_student_info(filepath):
     reg_no = reg_no_match.group(1).strip()
 
     # Group(2) captures department even if there's noise
-    branch = branch_match.group(2).strip()
+    branch = branch_match.group(1).strip()
     branch = re.sub(r"\s+", " ", branch)  # normalize spaces
 
     # Subject pattern: SEM CODE TITLE GRADE RESULT
