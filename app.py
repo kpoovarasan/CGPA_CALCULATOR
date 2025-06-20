@@ -174,9 +174,10 @@ def extract_student_info(filepath):
 
     # Improved branch regex that captures even broken OCR words
     branch_match = re.search(
-        r"Degree\s*[-–]?\s*Branch\s*[:\-]?\s*(B\.?Tech\.?|B\.?E\.?)?\s*[-–]?\s*([A-Za-z\s&\.\-]+)",
-        text, re.IGNORECASE
+    r"Degree\s*[-–]?\s*Branch\s*[:\-]?\s*(?:B\.?Tech\.?|B\.?E\.?)?\s*[-–]?\s*([A-Za-z\s&\.\-]+?)(?=\s{2,}|\sSEMESTER|\sSUB-CODE)",
+    text, re.IGNORECASE
     )
+
 
     if not (name_match and reg_no_match and branch_match):
         raise ValueError("Student name, register number or branch missing.")
