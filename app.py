@@ -45,7 +45,7 @@ class CGPA:
         if self.has_fail_or_absent():
             return None
 
-        branch = self.dep.lower()
+        branch_input = self.dep.lower()
         credit_maps = {
             "artificial intelligence": {
             'U20HS101': 3, 'U20MA101': 4, 'U20PH101': 3, 'U20CY101': 3,
