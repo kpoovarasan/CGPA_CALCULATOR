@@ -138,8 +138,8 @@ class CGPA:
             }
         }
         for key in credit_maps:
-        if key in branch_input:
-            return self.calculate(credit_maps[key])
+            if key in branch_input:
+                return self.calculate(credit_maps[key])
         cleaned_branch = re.sub(r"[^a-z\s]", "", branch_input)  # remove punctuation
         cleaned_branch = re.sub(r"\s+", " ", cleaned_branch).strip()
 
