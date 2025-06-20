@@ -59,9 +59,11 @@
             <input type="hidden" name="cgpa" value="{{ cgpa }}">
             {% if subject_data %}
                 {% for subject in subject_data %}
+                    <input type="hidden" name="subject_{{ loop.index0 }}_Semester" value="{{ subject['Semester'] }}">
                     <input type="hidden" name="subject_{{ loop.index0 }}_Code" value="{{ subject['Code'] }}">
                     <input type="hidden" name="subject_{{ loop.index0 }}_Title" value="{{ subject['Title'] }}">
                     <input type="hidden" name="subject_{{ loop.index0 }}_Grade" value="{{ subject['Grade'] }}">
+                    <input type="hidden" name="subject_{{ loop.index0 }}_Result" value="{{ subject['Result'] }}">
                 {% endfor %}
             {% endif %}
             <button type="submit" class="download-btn">Download PDF</button>
