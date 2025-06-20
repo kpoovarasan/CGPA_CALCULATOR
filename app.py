@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-
-
 from flask import Flask, render_template, request, send_file
 import os
 import re
@@ -204,7 +201,7 @@ if __name__ == "__main__":
     if not os.path.exists('uploads'):
         os.makedirs('uploads')
     app.run(debug=True)
-=======
+
 from flask import Flask, render_template, request
 import os
 import re
