@@ -137,17 +137,24 @@ class CGPA:
                 'U20BT801': 3, 'U20BT802': 6,'GE3252': 1,'GE3152': 1
             }
         }
-        cleaned_input = re.sub(r"[^a-z]", "", branch_input)[:4]  # e.g., 'arti'
-    
         for key in credit_maps:
-            cleaned_key = re.sub(r"[^a-z]", "", key)[:4]
-            if cleaned_input == cleaned_key:
+            if key in branch_input:
                 return self.calculate(credit_maps[key])
+
+        # Try fuzzy match on cleaned input
+        # Extract only the meaningful part
+        cleaned_branch = re.sub(r"[^a-z\s]", "", branch_input)  # remove punctuation
+        cleaned_branch = re.sub(r"\s+", " ", cleaned_branch).strip()
+    
+        # Try fuzzy match
+        closest = difflib.get_close_matches(cleaned_branch, credit_maps.keys(), n=1, cutoff=0.6)
+        if closest:
+            return self.calculate(credit_maps[closest[0]])
     
         raise ValueError(f"Branch '{self.dep}' not supported.")
 
 def extract_student_info(filepath):
-
+    
     file_type, _ = mimetypes.guess_type(filepath)
     if file_type.startswith("image"):
         text = pytesseract.image_to_string(Image.open(filepath))
@@ -157,27 +164,37 @@ def extract_student_info(filepath):
     else:
         raise ValueError("Unsupported file type")
 
-    text = re.sub(r"[^\x00-\x7F]+", " ", text)  # Remove non-ASCII
+    # Clean text
+    text = re.sub(r"[^\x00-\x7F]+", " ", text)  # remove non-ASCII
+    text = re.sub(r"\s+", " ", text)  # normalize whitespace
 
-    # Extract student info
-    name_match = re.search(r"Name\s*[:\-]?\s*([A-Z\s\.]+)", text, re.IGNORECASE)
+    # Extract name
+    name_match = re.search(r"Name\s*[:\-]?\s*([A-Z\s\.]+?)\s*(Register|Date|DOB|Reg)", text, re.IGNORECASE)
     reg_no_match = re.search(r"Register\s*No\s*[:\-]?\s*(\d+)", text, re.IGNORECASE)
-    branch_match = re.search(r"Degree\s*[-–]?\s*Branch\s*[:\-]?\s*(.+)", text, re.IGNORECASE)
+
+    # Improved branch regex that captures even broken OCR words
+    branch_match = re.search(
+        r"Degree\s*[-–]?\s*Branch\s*[:\-]?\s*(B\.?Tech\.?|B\.?E\.?)?\s*[-–]?\s*([A-Za-z\s&\.\-]+)",
+        text, re.IGNORECASE
+    )
 
     if not (name_match and reg_no_match and branch_match):
         raise ValueError("Student name, register number or branch missing.")
 
-    name = name_match.group(1).replace("Date of Birth", "").strip()
+    name = name_match.group(1).strip()
     reg_no = reg_no_match.group(1).strip()
-    branch = branch_match.group(1).strip()
 
-    # Match pattern: SEMESTER CODE TITLE GRADE RESULT
+    # Group(2) captures department even if there's noise
+    branch = branch_match.group(2).strip()
+    branch = re.sub(r"\s+", " ", branch)  # normalize spaces
+
+    # Subject pattern: SEM CODE TITLE GRADE RESULT
     pattern = re.compile(
-        r"(I{1,3}|IV|V|VI|VII|VIII)\s+"                  # Semester
-        r"(U\d{2}\w+)\s+"                                # Subject Code
-        r"([A-Za-z0-9\s\.\,\-\(\)\/&]+?)\s+"             # Title (non-greedy)
-        r"(O|A\+|A|B\+|B|C|U|RA|UA)\s+"                  # Grade
-        r"(PASS|FAIL|AB)",                               # Result
+        r"(I{1,3}|IV|V|VI|VII|VIII)\s+"
+        r"(U\d{2}\w+)\s+"
+        r"([A-Za-z0-9\s\.\,\-\(\)\/&]+?)\s+"
+        r"(O|A\+|A|B\+|B|C|U|RA|UA)\s+"
+        r"(PASS|FAIL|AB)",
         re.IGNORECASE
     )
 
@@ -185,7 +202,6 @@ def extract_student_info(filepath):
     if not matches:
         raise ValueError("No subject data found.")
 
-    # Extract all subject details
     subject_data = [
         {
             "Semester": m[0].strip().upper(),
@@ -198,6 +214,7 @@ def extract_student_info(filepath):
     ]
 
     return name, reg_no, branch, subject_data
+
 
 @app.route('/')
 def index():
