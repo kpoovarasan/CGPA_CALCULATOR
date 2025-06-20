@@ -137,15 +137,12 @@ class CGPA:
                 'U20BT801': 3, 'U20BT802': 6,'GE3252': 1,'GE3152': 1
             }
         }
+        cleaned_input = re.sub(r"[^a-z]", "", branch_input)[:4]  # e.g., 'arti'
+    
         for key in credit_maps:
-            if key in branch_input:
+            cleaned_key = re.sub(r"[^a-z]", "", key)[:4]
+            if cleaned_input == cleaned_key:
                 return self.calculate(credit_maps[key])
-        cleaned_branch = re.sub(r"[^a-z\s]", "", branch_input)  # remove punctuation
-        cleaned_branch = re.sub(r"\s+", " ", cleaned_branch).strip()
-
-        best_match = difflib.get_close_matches(branch, credit_maps.keys(), n=1, cutoff=0.6)
-        if best_match:
-            return self.calculate(credit_maps[best_match[0]])
     
         raise ValueError(f"Branch '{self.dep}' not supported.")
 
